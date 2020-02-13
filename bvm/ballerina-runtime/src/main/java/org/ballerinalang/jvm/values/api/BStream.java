@@ -39,17 +39,26 @@ public interface BStream extends BIterator<Object>, BRefValue {
      * Returns a stream which applies a filtering condition on the input stream.
      *
      * @param stream The input stream being filtered
-     * @param functionPointer The function pointer which represents the filtering condition
+     * @param filterFunc The function pointer which represents the filtering condition
      * @return The output stream
      */
-    BStream filter(BStream stream, BFunctionPointer<Object, Boolean> functionPointer);
+    BStream filter(BStream stream, BFunctionPointer<Object, Boolean> filterFunc);
 
     /**
      * Returns a new stream which applies a mapping condition on the input stream.
      *
      * @param stream The input stream being mapped
-     * @param functionPointer The function pointer which represents the mapping condition
+     * @param mapFunc The function pointer which represents the mapping condition
      * @return The output stream
      */
-    BStream map(BStream stream, BFunctionPointer<Object, Object> functionPointer);
+    BStream map(BStream stream, BFunctionPointer<Object, Object> mapFunc);
+
+    /**
+     * Applies a function to each member of a stream.
+     * The parameter 'func' is applied to each member of stream 'strm' in order.
+     *
+     * @param foreachFunc The function which is applied to each member in stream 'strm'
+     */
+    void forEach(BFunctionPointer<Object, Object> foreachFunc);
+
 }

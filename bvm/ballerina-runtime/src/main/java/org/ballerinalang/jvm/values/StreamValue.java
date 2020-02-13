@@ -146,6 +146,18 @@ public class StreamValue implements RefValue, BStream {
     }
 
     @Override
+    public void forEach(BFunctionPointer<Object, Object> foreachFunc) {
+        Object next;
+        do {
+            next = next();
+            if (next == null) {
+                break;
+            }
+            foreachFunc.call(new Object[] {next, true});
+        } while (true);
+    }
+
+    @Override
     public boolean hasNext() {
         return true;
     }
@@ -162,7 +174,6 @@ public class StreamValue implements RefValue, BStream {
 
         return mapper.execute(next);
     }
-
     @Override
     public String toString() {
         return stringValue();
