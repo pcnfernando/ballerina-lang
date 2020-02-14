@@ -150,6 +150,21 @@ function testForEach() returns float {
     return avg;
 }
 
+function testQuery() returns Person[]{
+     Person[] personList = [];
+     Person chiran = {name: "Chiran", age: 75};
+     personList.push(chiran);
+
+    Person[] filteredList =
+            from var person in personList
+            where person.age == 75
+            select {
+                   name: person.name,
+                   age: person.age
+            };
+    return  filteredList;
+}
+
 function testIterator() returns boolean {
     boolean testPassed = true;
     Person[] personList = getPersonList();

@@ -1,146 +1,179 @@
-type Person record {|
-   string firstName;
-   string lastName;
-   int age;
-|};
+// Copyright (c) 2020 WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+//
+// WSO2 Inc. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
 
+type Person record {
+    string name;
+    int age;
+};
 
-function testSimpleSelectQueryWithSimpleVariable() returns Person[]{
+type Employee record {
+    string name;
+    string company;
+};
 
-    Person p1 = {firstName: "Alex", lastName: "George", age: 23};
-    Person p2 = {firstName: "Ranjan", lastName: "Fonseka", age: 30};
-    Person p3 = {firstName: "John", lastName: "David", age: 33};
+//function testFilterFunc() returns boolean {
+//    boolean testPassed = true;
+//    Person[] personList = getPersonList();
+//
+//    stream<Person> personStream = personList.toStream();
+//    stream<Person> filteredPersonStream = personStream.filter(function (Person person) returns boolean {
+//        return person.age > 100 && person.name != "James";
+//    });
+//
+//    record {|Person value;|}? filteredPerson = filteredPersonStream.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[1];
+//
+//    filteredPerson = filteredPersonStream.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[2];
+//
+//    filteredPerson = filteredPersonStream.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[4];
+//
+//    filteredPerson = filteredPersonStream.next();
+//    testPassed = testPassed && filteredPerson == ();
+//
+//    return testPassed;
+//}
+//
+//function testMapFunc() returns boolean {
+//    boolean testPassed = true;
+//    Person[] personList = getPersonList();
+//
+//    stream<Person> personStream = personList.toStream();
+//    stream<Employee> employeeStream = personStream.'map(function (Person person) returns Employee {
+//        Employee e = {
+//            name: person.name,
+//            company: "WSO2"
+//        };
+//        return e;
+//    });
+//
+//    var employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Gima" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Mohan" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Grainier" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Chiran" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Sinthuja" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee == ();
+//
+//    return testPassed;
+//}
+//
+//function testFilterAndMapFunc() returns boolean {
+//    boolean testPassed = true;
+//    Person[] personList = getPersonList();
+//
+//    stream<Person> personStream = personList.toStream();
+//    stream<Employee> employeeStream = personStream
+//    . filter(function (Person person) returns boolean {
+//        return person.age > 100 && person.name != "James";
+//    }
+//    )
+//    . 'map(function (Person person) returns Employee {
+//        Employee e = {
+//            name: person.name,
+//            company: "WSO2"
+//        };
+//        return e;
+//    }
+//    );
+//
+//    var employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Mohan" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Grainier" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee?.value?.name == "Sinthuja" && employee?.value?.company == "WSO2";
+//
+//    employee = employeeStream.next();
+//    testPassed = testPassed && employee == ();
+//
+//    return testPassed;
+//}
+//
+//function testReduce() returns float {
+//    Person[] personList = getPersonList();
+//    stream<Person> personStream = personList.toStream();
+//    float avg = personStream.reduce(function (float accum, Person person) returns float {
+//        return accum + <float>person.age / personList.length();
+//    }, 0.0);
+//    return avg;
+//}
 
-    Person[] personList = [p1, p2, p3];
+function testForEach() returns Person[] {
+    Person chiran = {name: "Chiran", age: 75};
+    Person mohan = {name: "Mohan", age: 80};
+    Person[] personList = [chiran, mohan];
 
-    Person[] outputPersonList =
-            from var person in personList
-            select {
-                   firstName: person.firstName,
-                   lastName: person.lastName,
-                   age: person.age
-            };
-
-    return  outputPersonList;
+    Person[] filteredList = [];
+    personList.toStream().forEach(function (Person person) {
+       if(person.age == 75) {
+           filteredList[filteredList.length()] = person;
+       }
+    });
+    return filteredList;
 }
 
-function testSimpleSelectQueryWithRecordVariable() returns Person[]{
+function testQuery() returns Person[]{
+     Person chiran = {name: "Chiran", age: 75};
+     Person[] personList = [chiran];
 
-    Person p1 = {firstName:"Alex", lastName: "George", age: 23};
-    Person p2 = {firstName:"Ranjan", lastName: "Fonseka", age: 30};
-    Person p3 = {firstName:"John", lastName: "David", age: 33};
-
-    Person[] personList = [p1, p2, p3];
-
-    Person[] outputPersonList =
-            from var { firstName: nm1, lastName: nm2, age: a } in personList
-            select {
-                   firstName: nm1,
-                   lastName: nm2,
-                   age: a
-            };
-
-    return  outputPersonList;
+    Person[] filteredList = [];
+    filteredList = from var person in personList
+            where person.age == 75
+            select person;
+    return  filteredList;
 }
 
-function testSimpleSelectQueryWithRecordVariableV2() returns Person[]{
-
-    Person p1 = {firstName:"Alex", lastName: "George", age: 23};
-    Person p2 = {firstName:"Ranjan", lastName: "Fonseka", age: 30};
-    Person p3 = {firstName:"John", lastName: "David", age: 33};
-
-    Person[] personList = [p1, p2, p3];
-
-    Person[] outputPersonList =
-            from var { firstName, lastName, age } in personList
-            select {
-                   firstName: firstName,
-                   lastName: lastName,
-                   age: age
-            };
-
-    return  outputPersonList;
-}
-
-function testSimpleSelectQueryWithWhereClause() returns Person[]{
-
-    Person p1 = {firstName:"Alex", lastName: "George", age: 23};
-    Person p2 = {firstName:"Ranjan", lastName: "Fonseka", age: 30};
-    Person p3 = {firstName:"John", lastName: "David", age: 33};
-
-    Person[] personList = [p1, p2, p3];
-
-    Person[] outputPersonList =
-            from var person in personList
-            where person.age >= 30
-            select {
-                   firstName: person.firstName,
-                   lastName: person.lastName,
-                   age: person.age
-            };
-    return  outputPersonList;
-}
-
-function testQueryExpressionForPrimitiveType() returns int[]{
-
-    int[] intList = [12, 13, 14, 15, 20, 21, 25];
-
-    int[] outputIntList =
-            from var value in intList
-            where value > 20
-            select value;
-
-    return  outputIntList;
-}
-
-function testQueryExpressionWithSelectExpression() returns string[]{
-
-    int[] intList = [1, 2, 3];
-
-    string[] stringOutput =
-            from var value in intList
-            select value.toString();
-
-    return  stringOutput;
-}
-
-function testFilteringNullElements() returns Person[] {
-
-    Person p1 = {firstName:"Alex", lastName: "George", age: 23};
-    Person p2 = {firstName:"Ranjan", lastName: "Fonseka", age: 30};
-
-    Person?[] personList = [p1,  (), p2];
-
-    Person[] outputPersonList =
-                     from var person in personList
-                     where (person is Person)
-                     select {
-                         firstName: person.firstName,
-                         lastName: person.lastName,
-                         age: person.age
-                         };
-    return outputPersonList;
-}
-
-function testMapWithArity () returns string[] {
-    map<any> m = {a:"1A", b:"2B", c:"3C", d:"4D"};
-    string[] val = from var v in m
-                   where <string> v == "1A"
-                   select <string> v;
-    return val;
-}
-
-function testJSONArrayWithArity() returns string[] {
-    json[] jdata = [{ name : "bob", age : 10}, { name : "tom", age : 16}];
-    string[] val = from var v in jdata
-                   select <string> v.name;
-    return val;
-}
-
-function testArrayWithTuple() returns string[] {
-    [int, string][] arr = [[1, "A"], [2, "B"], [3, "C"]];
-    string[] val = from var [i, v] in arr
-                   where i == 3
-                   select v;
-    return val;
-}
+//function testIterator() returns boolean {
+//    boolean testPassed = true;
+//    Person[] personList = getPersonList();
+//
+//    stream<Person> personStream = personList.toStream();
+//    var iterator = personStream.iterator();
+//
+//    record {|Person value;|}? filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[0];
+//
+//    filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[1];
+//
+//    filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[2];
+//
+//    filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[3];
+//
+//    filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson?.value == personList[4];
+//
+//    filteredPerson = iterator.next();
+//    testPassed = testPassed && filteredPerson == ();
+//
+//    return testPassed;
+//}

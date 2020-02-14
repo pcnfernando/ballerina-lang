@@ -268,8 +268,8 @@ public class Desugar extends BLangNodeVisitor {
     private BLangStatementLink currentLink;
     public Stack<BLangLockStmt> enclLocks = new Stack<>();
 
-    private SymbolEnv env;
-    private int lambdaFunctionCount = 0;
+    SymbolEnv env;
+    int lambdaFunctionCount = 0;
     private int transactionIndex = 0;
     private int recordCount = 0;
     private int errorCount = 0;
@@ -1804,7 +1804,7 @@ public class Desugar extends BLangNodeVisitor {
         return functionBlock;
     }
 
-    private BTupleType getStringAnyTupleType() {
+    BTupleType getStringAnyTupleType() {
         ArrayList<BType> typeList = new ArrayList<BType>() {{
             add(symTable.stringType);
             add(symTable.anyType);
@@ -2077,7 +2077,7 @@ public class Desugar extends BLangNodeVisitor {
         assignmentStmt.expr = assignmentExpr;
     }
 
-    private BLangExpression createIndexBasedAccessExpr(BType varType, DiagnosticPos varPos, BLangExpression indexExpr,
+    BLangExpression createIndexBasedAccessExpr(BType varType, DiagnosticPos varPos, BLangExpression indexExpr,
                                                        BVarSymbol tupleVarSymbol, BLangIndexBasedAccess parentExpr) {
 
         BLangIndexBasedAccess arrayAccess = ASTBuilderUtil.createIndexBasesAccessExpr(varPos,
@@ -3911,7 +3911,7 @@ public class Desugar extends BLangNodeVisitor {
         result = rewriteExpr(lambdaFunction);
     }
 
-    private void defineInvokableSymbol(BLangInvokableNode invokableNode, BInvokableSymbol funcSymbol,
+    void defineInvokableSymbol(BLangInvokableNode invokableNode, BInvokableSymbol funcSymbol,
                                        SymbolEnv invokableEnv) {
         invokableNode.symbol = funcSymbol;
         funcSymbol.scope = new Scope(funcSymbol);

@@ -48,22 +48,6 @@ public function next(stream<PureType1> strm) returns record {|PureType1 value;|}
 # + return - New stream containing result of applying `func` to each member of `strm` in order
 public function 'map(stream<PureType1> strm, function(PureType1 val) returns PureType2 func) returns stream<PureType2> = external;
 
-# Combines the members of an stream using a combining function.
-# The combining function takes the combined value so far and a member of the stream,
-# and returns a new combined value.
-#
-# + strm - the stream
-# + func - combining function
-# + initial - initial value for the first argument of combining parameter `func`
-# + return - result of combining the members of `strm` using `func`
-#
-# For example
-# ```
-# reduce([1, 2, 3].toStream(), function (int total, int n) returns int { return total + n; }, 0)
-# ```
-# is the same as `sum(1, 2, 3)`.
-public function reduce(stream<PureType1> strm, function(Type accum, PureType1 val) returns Type func, Type initial) returns Type = external;
-
 # Applies a function to each member of a stream.
 # The parameter `func` is applied to each member of stream `strm` in order.
 #

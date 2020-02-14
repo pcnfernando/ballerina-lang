@@ -18,6 +18,8 @@
 
 package org.ballerinalang.test.query;
 
+import org.ballerinalang.model.values.BBoolean;
+import org.ballerinalang.model.values.BFloat;
 import org.ballerinalang.model.values.BInteger;
 import org.ballerinalang.model.values.BMap;
 import org.ballerinalang.model.values.BValue;
@@ -35,7 +37,6 @@ import org.testng.annotations.Test;
  * @since 1.2.0
  */
 public class SimpleQueryExpressionWithDefinedTypeTest {
-
     private CompileResult result;
 
     @BeforeClass
@@ -43,134 +44,39 @@ public class SimpleQueryExpressionWithDefinedTypeTest {
         result = BCompileUtil.compile("test-src/query/simple-query-with-defined-type.bal");
     }
 
-    @Test(description = "Test simple select clause - simple variable definition statement ")
-    public void testSimpleSelectQueryWithSimpleVariable() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testSimpleSelectQueryWithSimpleVariable");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 3, "Expected events are not received");
-
-        BMap<String, BValue> person1 = (BMap<String, BValue>) returnValues[0];
-        BMap<String, BValue> person2 = (BMap<String, BValue>) returnValues[1];
-        BMap<String, BValue> person3 = (BMap<String, BValue>) returnValues[2];
-
-        Assert.assertEquals(person1.get("firstName").stringValue(), "Alex");
-        Assert.assertEquals(person2.get("lastName").stringValue(), "Fonseka");
-        Assert.assertEquals(((BInteger) person3.get("age")).intValue(), 33);
+    //    @Test
+    public void testFilterFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testFilterFunc", new BValue[]{});
+        Assert.assertTrue(((BBoolean) values[0]).booleanValue());
     }
 
-    @Test(description = "Test simple select clause - record variable definition statement ")
-    public void testSimpleSelectQueryWithRecordVariable() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testSimpleSelectQueryWithRecordVariable");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 3, "Expected events are not received");
-
-        BMap<String, BValue> person1 = (BMap<String, BValue>) returnValues[0];
-        BMap<String, BValue> person2 = (BMap<String, BValue>) returnValues[1];
-        BMap<String, BValue> person3 = (BMap<String, BValue>) returnValues[2];
-
-        Assert.assertEquals(person1.get("firstName").stringValue(), "Alex");
-        Assert.assertEquals(person2.get("lastName").stringValue(), "Fonseka");
-        Assert.assertEquals(((BInteger) person3.get("age")).intValue(), 33);
+    //    @Test
+    public void testMapFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testMapFunc", new BValue[]{});
+        Assert.assertTrue(((BBoolean) values[0]).booleanValue());
     }
 
-    @Test(description = "Test simple select clause - record variable definition statement v2 ")
-    public void testSimpleSelectQueryWithRecordVariableV2() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testSimpleSelectQueryWithRecordVariableV2");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 3, "Expected events are not received");
-
-        BMap<String, BValue> person1 = (BMap<String, BValue>) returnValues[0];
-        BMap<String, BValue> person2 = (BMap<String, BValue>) returnValues[1];
-        BMap<String, BValue> person3 = (BMap<String, BValue>) returnValues[2];
-
-        Assert.assertEquals(person1.get("firstName").stringValue(), "Alex");
-        Assert.assertEquals(person2.get("lastName").stringValue(), "Fonseka");
-        Assert.assertEquals(((BInteger) person3.get("age")).intValue(), 33);
+    //    @Test
+    public void testFilterAndMapFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testFilterAndMapFunc", new BValue[]{});
+        Assert.assertTrue(((BBoolean) values[0]).booleanValue());
     }
 
-    @Test(description = "Test simple select clause with a where clause")
-    public void testSimpleSelectQueryWithWhereClause() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testSimpleSelectQueryWithWhereClause");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 2, "Expected events are not received");
-
-        BMap<String, BValue> person1 = (BMap<String, BValue>) returnValues[0];
-        BMap<String, BValue> person2 = (BMap<String, BValue>) returnValues[1];
-
-        Assert.assertEquals(person1.get("firstName").stringValue(), "Ranjan");
-        Assert.assertEquals(person2.get("firstName").stringValue(), "John");
-        Assert.assertEquals(((BInteger) person1.get("age")).intValue(), 30);
-        Assert.assertEquals(((BInteger) person2.get("age")).intValue(), 33);
+    //    @Test
+    public void testReduceFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testReduce", new BValue[]{});
+        Assert.assertEquals(((BFloat) values[0]).floatValue(), 135.0);
     }
 
-    @Test(description = "Test Query expression for primitive types ")
-    public void testQueryExpressionForPrimitiveType() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testQueryExpressionForPrimitiveType");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 1, "Expected events are not received");
-        Assert.assertTrue(returnValues[0] instanceof BValueArray, "Expected BValueArray type value");
-
-        Assert.assertEquals(((BValueArray) returnValues[0]).getInt(0), 21);
-        Assert.assertEquals(((BValueArray) returnValues[0]).getInt(1), 25);
+    @Test
+    public void testForReachFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testQuery", new BValue[]{});
+//        Assert.assertEquals(((BFloat) values[0]).floatValue(), 135.0);
     }
 
-    @Test(description = "Test Query expression with select expression ")
-    public void testQueryExpressionWithSelectExpression() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testQueryExpressionWithSelectExpression");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 1, "Expected events are not received");
-        Assert.assertTrue(returnValues[0] instanceof BValueArray, "Expected BValueArray type value");
-
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(0), "1");
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(1), "2");
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(2), "3");
-    }
-
-    @Test(description = "Test filtering null values from query expression")
-    public void testFilteringNullElements() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testFilteringNullElements");
-        Assert.assertNotNull(returnValues);
-
-        Assert.assertEquals(returnValues.length, 2, "Expected events are not received");
-
-        BMap<String, BValue> person1 = (BMap<String, BValue>) returnValues[0];
-        BMap<String, BValue> person2 = (BMap<String, BValue>) returnValues[1];
-
-        Assert.assertEquals(person1.get("firstName").stringValue(), "Alex");
-        Assert.assertEquals(((BInteger) person1.get("age")).intValue(), 23);
-        Assert.assertEquals(person2.get("firstName").stringValue(), "Ranjan");
-        Assert.assertEquals(((BInteger) person2.get("age")).intValue(), 30);
-    }
-
-    @Test(description = "Test filtering map with from query expression")
-    public void testMapWithArity() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testMapWithArity");
-        Assert.assertNotNull(returnValues);
-        Assert.assertEquals(returnValues.length, 1);
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(0), "1A");
-    }
-
-    @Test(description = "Test selecting values in a JSON array from query expression")
-    public void testJSONArrayWithArity() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testJSONArrayWithArity");
-        Assert.assertNotNull(returnValues);
-        Assert.assertEquals((returnValues[0]).size(), 2);
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(0), "bob");
-        Assert.assertEquals(((BValueArray) returnValues[0]).getString(1), "tom");
-    }
-
-    @Test(description = "Test filtering values in a tuple from query expression")
-    public void testArrayWithTuple() {
-        BValue[] returnValues = BRunUtil.invoke(result, "testArrayWithTuple");
-        Assert.assertNotNull(returnValues);
-        Assert.assertEquals(returnValues.length, 1);
-        Assert.assertEquals(returnValues[0].stringValue(), "[\"C\"]");
+    //    @Test
+    public void testIteratorFunc() {
+        BValue[] values = BRunUtil.invoke(result, "testIterator", new BValue[]{});
+        Assert.assertTrue(((BBoolean) values[0]).booleanValue());
     }
 }
-

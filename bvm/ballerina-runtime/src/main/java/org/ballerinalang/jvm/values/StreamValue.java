@@ -153,7 +153,7 @@ public class StreamValue implements RefValue, BStream {
             if (next == null) {
                 break;
             }
-            foreachFunc.call(new Object[] {next, true});
+            foreachFunc.call(new Object[] {Scheduler.getStrand(), next, true});
         } while (true);
     }
 
