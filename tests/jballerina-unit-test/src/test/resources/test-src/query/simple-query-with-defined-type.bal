@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 type Person record {
     string name;
     int age;
@@ -124,29 +125,30 @@ type Employee record {
 //    }, 0.0);
 //    return avg;
 //}
+//
+//function testForEach() returns Person[] {
+//    Person chiran = {name: "Chiran", age: 75};
+//    Person[] personList = [chiran];
+//
+//    Person[] filteredList = [];
+//    stream<Person> streamedPerson = personList.toStream();
+//    streamedPerson.forEach(function (Person person) {
+//       //if(person.age == 75) {
+//           filteredList[filteredList.length()] = person;
+//       //}
+//    });
+//    io:println(filteredList);
+//    return filteredList;
+//}
 
-function testForEach() returns Person[] {
-    Person chiran = {name: "Chiran", age: 75};
-    Person mohan = {name: "Mohan", age: 80};
-    Person[] personList = [chiran, mohan];
-
-    Person[] filteredList = [];
-    personList.toStream().forEach(function (Person person) {
-       if(person.age == 75) {
-           filteredList[filteredList.length()] = person;
-       }
-    });
-    return filteredList;
-}
-
-function testQuery() returns Person[]{
+function testQuery() returns int[]{
      Person chiran = {name: "Chiran", age: 75};
      Person[] personList = [chiran];
 
-    Person[] filteredList = [];
-    filteredList = from var person in personList
-            where person.age == 75
-            select person;
+    int[] filteredList = from Person person in personList
+            //where person.age == 75
+            select 12;
+            io:println(filteredList);
     return  filteredList;
 }
 

@@ -34,6 +34,7 @@ import org.wso2.ballerinalang.compiler.semantics.model.types.BStreamType;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BType;
 import org.wso2.ballerinalang.compiler.tree.BLangFunction;
 import org.wso2.ballerinalang.compiler.tree.BLangIdentifier;
+import org.wso2.ballerinalang.compiler.tree.BLangInvokableNode;
 import org.wso2.ballerinalang.compiler.tree.BLangNodeVisitor;
 import org.wso2.ballerinalang.compiler.tree.BLangPackage;
 import org.wso2.ballerinalang.compiler.tree.BLangSimpleVariable;
@@ -57,12 +58,14 @@ import org.wso2.ballerinalang.compiler.tree.statements.BLangIf;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangQueryAction;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangSimpleVariableDef;
 import org.wso2.ballerinalang.compiler.tree.types.BLangValueType;
+import org.wso2.ballerinalang.compiler.util.ClosureVarSymbol;
 import org.wso2.ballerinalang.compiler.util.CompilerContext;
 import org.wso2.ballerinalang.compiler.util.Name;
 import org.wso2.ballerinalang.compiler.util.Names;
 import org.wso2.ballerinalang.compiler.util.TypeTags;
 import org.wso2.ballerinalang.compiler.util.diagnotic.BLangDiagnosticLog;
 import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticPos;
+import org.wso2.ballerinalang.util.Flags;
 import org.wso2.ballerinalang.util.Lists;
 
 import java.util.ArrayList;
@@ -132,16 +135,21 @@ public class QueryDesugar extends BLangNodeVisitor {
             outputArrayType = fromClause.varType;
         }
 
+        // Create temp array variable
+        //      Person[] x = [];
+
         BLangListConstructorExpr emptyArrayExpr = ASTBuilderUtil.createEmptyArrayLiteral(pos,
                 (BArrayType) outputArrayType);
-        BVarSymbol emptyArrayVarSymbol = new BVarSymbol(0, new Name("$outputDataArray$"),
+
+        BVarSymbol emptyArrayVarSymbol = new BVarSymbol(Flags.PUBLIC, new Name("$outputDataArray$"),
                 env.scope.owner.pkgID, outputArrayType, env.scope.owner);
         BLangSimpleVariable outputArrayVariable =
                 ASTBuilderUtil.createVariable(pos, "$outputDataArray$", outputArrayType,
                         emptyArrayExpr, emptyArrayVarSymbol);
-
-        // Create temp array variable
-        //      Person[] x = [];
+//        outputArrayVariable.symbol.closure = true;
+//        BLangInvokableNode encInvokable = env.enclInvokable;
+//        ((BLangFunction) encInvokable).closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
+//        ((BLangFunction) encInvokable).closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
 
         BLangSimpleVariableDef outputVariableDef =
                 ASTBuilderUtil.createVariableDef(pos, outputArrayVariable);
@@ -152,18 +160,14 @@ public class QueryDesugar extends BLangNodeVisitor {
         //         firstName: person.firstName,
         //         lastName: person.lastName
         //      };
-
         if (selectClause.expression.type == null) {
             selectClause.expression.type = fromClause.varType;
         }
 
-        BLangInvocation lengthInvocation = createLengthInvocation(selectClause.pos, outputArrayVariable.symbol);
+        BLangInvocation lengthInvocation = desugar.createLengthInvocation(selectClause.pos, outputVarRef);
         lengthInvocation.expr = outputVarRef;
         BLangIndexBasedAccess indexAccessExpr = ASTBuilderUtil.createIndexAccessExpr(outputVarRef, lengthInvocation);
         indexAccessExpr.type = selectClause.expression.type;
-//        BLangExpression indexAccessExpr2 =
-//                desugar.createIndexBasedAccessExpr(outputArrayType, pos, lengthInvocation, null, indexAccessExpr);
-//        indexAccessExpr2 = desugar.addConversionExprIfRequired(indexAccessExpr2, simpleVarRef.type);
 
         BLangAssignment outputVarAssignment = ASTBuilderUtil.createAssignmentStmt(pos, indexAccessExpr,
                 selectClause.expression);
@@ -172,42 +176,51 @@ public class QueryDesugar extends BLangNodeVisitor {
         nullType.typeKind = TypeKind.NIL;
         nullType.type = symTable.nilType;
 
-        BLangSimpleVariable inputStreamLambdaFunctionVariable = ASTBuilderUtil.createVariable(fromClause.pos,
-                ((BLangSimpleVariableDef) fromClause.getVariableDefinitionNode()).var.name.value,
-                selectClause.expression.type, null,
-                ((BLangSimpleVariableDef) fromClause.getVariableDefinitionNode()).var.symbol);
-        inputStreamLambdaFunctionVariable.typeNode = ASTBuilderUtil.createTypeNode(selectClause.expression.type);
-
         // Set the indexed based access expression statement as foreach body
-        BLangLambdaFunction labmdafunc = createLambdaFunction(pos, Lists.of(inputStreamLambdaFunctionVariable), nullType);
+        BLangSimpleVariable input = ((BLangSimpleVariableDef) fromClause.getVariableDefinitionNode()).var;
+        BLangLambdaFunction labmdafunc = createLambdaFunction(pos, Lists.of(outputArrayVariable,input), nullType);
         BLangBlockStmt lambdaBody = labmdafunc.function.body;
-//        lambdaBody.stmts.add(outputVariableDef);
         lambdaBody.stmts.add(outputVarAssignment);
+        labmdafunc.function.closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
+//        outputArrayVariable.symbol.closure = true;
 
 
         labmdafunc.function.body = buildWhereBlock(whereClauseList, lambdaBody, pos);;
         labmdafunc.cachedEnv = desugar.env.createClone();
-        outputArrayVariable.symbol.closure = true;
-
 
         BLangExpressionStmt stmt = ASTBuilderUtil.createExpressionStmt(pos, ASTBuilderUtil.createBlockStmt(pos));
 
+
+        //Crete toStream invocation
         BType streamType = new BStreamType(TypeTags.STREAM,  selectClause.expression.type, symTable.streamType.tsymbol);
+        BLangInvocation toStreamInvocation = createToStreamInvocation(pos,(BLangSimpleVarRef)fromClause.collection, streamType);
+
+        BVarSymbol streamVarSymbol = new BVarSymbol(Flags.PUBLIC, new Name("$streamedList$"),
+                env.scope.owner.pkgID, outputArrayType, env.scope.owner);
+        BLangSimpleVariable streamVariable =
+                ASTBuilderUtil.createVariable(pos, "$streamedList$", streamType,
+                        toStreamInvocation, streamVarSymbol);
+        BLangSimpleVariableDef streamVariableDef =
+                ASTBuilderUtil.createVariableDef(pos, streamVariable);
+        BLangSimpleVarRef streamVarRef = ASTBuilderUtil.createVariableRef(pos, streamVariable.symbol);
+
+        //Create forEach invocation
         BInvokableSymbol foreachInvokableSymbol =
                 (BInvokableSymbol) symResolver.lookupLangLibMethod(streamType,
                         names.fromString("forEach"));
-        BLangInvocation toStreamInvocation = createToStreamInvocation(pos,(BLangSimpleVarRef)fromClause.collection, streamType);
+
         BLangInvocation foreachInvocation = ASTBuilderUtil.createInvocationExprForMethod(pos, foreachInvokableSymbol,
-                Lists.of(toStreamInvocation, labmdafunc), symResolver);
+                Lists.of(streamVarRef, labmdafunc), symResolver);
         foreachInvocation.type = foreachInvokableSymbol.type.getReturnType();
         foreachInvocation.symbol = foreachInvokableSymbol;
-        foreachInvocation.argExprs = Lists.of(toStreamInvocation, labmdafunc);
-        foreachInvocation.expr = toStreamInvocation;
+        foreachInvocation.argExprs = Lists.of(streamVarRef, labmdafunc);
+        foreachInvocation.expr = streamVarRef;
 
         stmt.expr = foreachInvocation;
 
         // Create block statement with temp variable definition statement & foreach statement
         BLangBlockStmt blockStmt = ASTBuilderUtil.createBlockStmt(pos);
+        blockStmt.addStatement(streamVariableDef);
         blockStmt.addStatement(outputVariableDef);
         blockStmt.addStatement(stmt);
         BLangStatementExpression stmtExpr = ASTBuilderUtil.createStatementExpression(blockStmt, outputVarRef);
@@ -236,6 +249,7 @@ public class QueryDesugar extends BLangNodeVisitor {
     private BLangLambdaFunction createLambdaFunction(DiagnosticPos pos,
                                                      List<BLangSimpleVariable> lambdaFunctionVariable,
                                                      TypeNode returnType) {
+
         BLangLambdaFunction lambdaFunction = (BLangLambdaFunction) TreeBuilder.createLambdaFunctionNode();
         BLangFunction func = ASTBuilderUtil.createFunction(pos,
                 anonymousModelHelper.getNextAnonymousFunctionKey(desugar.env.enclPkg.packageID));
@@ -321,8 +335,8 @@ public class QueryDesugar extends BLangNodeVisitor {
 
     private BLangBlockStmt buildWhereBlock(List<BLangWhereClause> whereClauseList,
                                        BLangBlockStmt foreachBody, DiagnosticPos pos) {
-        BLangBlockStmt bLangBlockStmt = ASTBuilderUtil.createBlockStmt(pos);
         if (whereClauseList.size() > 0) {
+            BLangBlockStmt bLangBlockStmt = ASTBuilderUtil.createBlockStmt(pos);
             // Create If Statement with Where expression and foreach body
             BLangIf outerIf = null;
             BLangIf innerIf = null;
@@ -341,23 +355,23 @@ public class QueryDesugar extends BLangNodeVisitor {
             }
             innerIf.setBody(foreachBody);
             bLangBlockStmt.addStatement(outerIf);
+            return  bLangBlockStmt;
         } else {
-            bLangBlockStmt.stmts.add(foreachBody);
+            return foreachBody;
         }
-        return bLangBlockStmt;
     }
 
-    private BLangInvocation createLengthInvocation(DiagnosticPos pos, BVarSymbol collectionSymbol) {
-        BInvokableSymbol lengthInvokableSymbol =
-                (BInvokableSymbol) symResolver.lookupLangLibMethod(collectionSymbol.type,
-                        names.fromString("length"));
-        BLangSimpleVarRef collection = ASTBuilderUtil.createVariableRef(pos, collectionSymbol);
-        BLangInvocation lengthInvocation = ASTBuilderUtil.createInvocationExprForMethod(pos, lengthInvokableSymbol,
-                Lists.of(collection), symResolver);
-        lengthInvocation.type = lengthInvokableSymbol.type.getReturnType();
-        // Note: No need to set lengthInvocation.expr for langLib functions as they are in requiredArgs
-        return lengthInvocation;
-    }
+//    private BLangInvocation createLengthInvocation(DiagnosticPos pos, BLangSimpleVarRef varRef) {
+//        BInvokableSymbol lengthInvokableSymbol =
+//                (BInvokableSymbol) symResolver.lookupLangLibMethod(varRef.symbol,
+//                        names.fromString("length"));
+//        BLangSimpleVarRef collection = ASTBuilderUtil.createVariableRef(pos, collectionSymbol);
+//        BLangInvocation lengthInvocation = ASTBuilderUtil.createInvocationExprForMethod(pos, lengthInvokableSymbol,
+//                Lists.of(collection), symResolver);
+//        lengthInvocation.type = lengthInvokableSymbol.type.getReturnType();
+//        // Note: No need to set lengthInvocation.expr for langLib functions as they are in requiredArgs
+//        return lengthInvocation;
+//    }
 
     private BLangInvocation createToStreamInvocation(DiagnosticPos pos, BLangSimpleVarRef variableReference,
                                                      BType  bStreamType) {

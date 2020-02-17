@@ -22,6 +22,7 @@ import org.ballerinalang.model.values.BBoolean;
 import org.ballerinalang.model.values.BFloat;
 import org.ballerinalang.model.values.BInteger;
 import org.ballerinalang.model.values.BMap;
+import org.ballerinalang.model.values.BString;
 import org.ballerinalang.model.values.BValue;
 import org.ballerinalang.model.values.BValueArray;
 import org.ballerinalang.test.util.BCompileUtil;
@@ -70,7 +71,7 @@ public class SimpleQueryExpressionWithDefinedTypeTest {
 
     @Test
     public void testForReachFunc() {
-        BValue[] values = BRunUtil.invoke(result, "testQuery", new BValue[]{});
+        BValue[] values = BRunUtil.invoke(result, "testQuery");
 //        Assert.assertEquals(((BFloat) values[0]).floatValue(), 135.0);
     }
 

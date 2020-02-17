@@ -257,7 +257,7 @@ public class Desugar extends BLangNodeVisitor {
     private SymbolTable symTable;
     private SymbolResolver symResolver;
     private final SymbolEnter symbolEnter;
-    private ClosureDesugar closureDesugar;
+    public ClosureDesugar closureDesugar;
     private QueryDesugar queryDesugar;
     private AnnotationDesugar annotationDesugar;
     private Types types;
@@ -1960,7 +1960,7 @@ public class Desugar extends BLangNodeVisitor {
         }
     }
 
-    private BLangInvocation createLengthInvocation(DiagnosticPos pos, BLangExpression collection) {
+    BLangInvocation createLengthInvocation(DiagnosticPos pos, BLangExpression collection) {
         BInvokableSymbol lengthInvokableSymbol = (BInvokableSymbol) symResolver
                 .lookupLangLibMethod(collection.type, names.fromString(LENGTH_FUNCTION_NAME));
         BLangInvocation lengthInvocation = ASTBuilderUtil.createInvocationExprForMethod(pos, lengthInvokableSymbol,

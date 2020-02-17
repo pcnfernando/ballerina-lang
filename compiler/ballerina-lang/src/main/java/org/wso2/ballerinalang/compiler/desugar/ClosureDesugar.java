@@ -750,7 +750,7 @@ public class ClosureDesugar extends BLangNodeVisitor {
         result = bLangLambdaFunction;
     }
 
-    private TreeMap<Integer, BVarSymbol> collectClosureMapSymbols(SymbolEnv symbolEnv,
+    public TreeMap<Integer, BVarSymbol> collectClosureMapSymbols(SymbolEnv symbolEnv,
                                                                   BLangLambdaFunction bLangLambdaFunction) {
         // Save param closure map of the encl invokable.
         bLangLambdaFunction.paramMapSymbolsOfEnclInvokable = ((BLangFunction) symbolEnv.enclInvokable).paramClosureMap;
