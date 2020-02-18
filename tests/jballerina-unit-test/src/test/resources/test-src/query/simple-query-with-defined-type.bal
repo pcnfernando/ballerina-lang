@@ -126,31 +126,49 @@ type Employee record {
 //    return avg;
 //}
 //
-//function testForEach() returns Person[] {
-//    Person chiran = {name: "Chiran", age: 75};
-//    Person[] personList = [chiran];
+function testForEach()  returns Person[] {
+    Person chiran = {name: "Chiran", age: 75};
+    Person mohan = {name: "Mohan", age: 80};
+    Person[] personList = [chiran];
+
+    Person[] filteredList = [];
+    stream<Person> streamedPerson = personList.toStream();
+    foreach var person in  streamedPerson {
+       if(person.age == 75) {
+           filteredList[filteredList.length()] = person;
+       }
+    }
+    io:println(filteredList);
+    return filteredList;
+}
+
+
+//function testForEach()  returns int[] {
+//    int[] personList = [1,2,3,4,5];
 //
-//    Person[] filteredList = [];
-//    stream<Person> streamedPerson = personList.toStream();
-//    streamedPerson.forEach(function (Person person) {
-//       //if(person.age == 75) {
-//           filteredList[filteredList.length()] = person;
-//       //}
-//    });
-//    io:println(filteredList);
+//    int[] filteredList = [];
+//    stream<int> streamedPerson = personList.toStream();
+//    foreach var person in  streamedPerson.iterator() {
+//           filteredList[filteredList.length()] = 2;
+//    }
 //    return filteredList;
 //}
 
-function testQuery() returns int[]{
-     Person chiran = {name: "Chiran", age: 75};
-     Person[] personList = [chiran];
+//function testQuery() returns int[] {
+//     Person chiran = {name: "Chiran", age: 75};
+//     Person[] personList = [chiran];
+//
+//    int[] filteredList = from Person person in personList
+//            //where person.age == 75
+//            select 12;
+//
+//            io:println(filteredList);
+//    return  filteredList;
+//}
 
-    int[] filteredList = from Person person in personList
-            //where person.age == 75
-            select 12;
-            io:println(filteredList);
-    return  filteredList;
-}
+//public function main() {
+//    io:println("adfasd");
+//}
 
 //function testIterator() returns boolean {
 //    boolean testPassed = true;

@@ -71,7 +71,7 @@ public class SimpleQueryExpressionWithDefinedTypeTest {
 
     @Test
     public void testForReachFunc() {
-        BValue[] values = BRunUtil.invoke(result, "testQuery");
+        BValue[] values = BRunUtil.invoke(result, "testForEach");
 //        Assert.assertEquals(((BFloat) values[0]).floatValue(), 135.0);
     }
 

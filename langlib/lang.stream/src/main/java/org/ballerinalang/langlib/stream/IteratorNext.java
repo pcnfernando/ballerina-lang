@@ -19,6 +19,7 @@
 package org.ballerinalang.langlib.stream;
 
 import org.ballerinalang.jvm.BallerinaValues;
+import org.ballerinalang.jvm.scheduling.Strand;
 import org.ballerinalang.jvm.types.BField;
 import org.ballerinalang.jvm.types.BRecordType;
 import org.ballerinalang.jvm.types.TypeFlags;
@@ -49,7 +50,7 @@ import java.util.Map;
 )
 public class IteratorNext {
     //TODO: refactor hard coded values
-    public static Object next(ObjectValue m) {
+    public static Object next(Strand strand, ObjectValue m) {
         StreamValue strmIterator = (StreamValue) m.getNativeData("&iterator&");
 
         if (strmIterator == null) {

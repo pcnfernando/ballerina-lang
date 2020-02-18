@@ -28,6 +28,7 @@ import org.wso2.ballerinalang.compiler.semantics.model.SymbolTable;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BInvokableSymbol;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BPackageSymbol;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BVarSymbol;
+import org.wso2.ballerinalang.compiler.semantics.model.symbols.SymTag;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BArrayType;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BInvokableType;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BStreamType;
@@ -146,7 +147,10 @@ public class QueryDesugar extends BLangNodeVisitor {
         BLangSimpleVariable outputArrayVariable =
                 ASTBuilderUtil.createVariable(pos, "$outputDataArray$", outputArrayType,
                         emptyArrayExpr, emptyArrayVarSymbol);
-//        outputArrayVariable.symbol.closure = true;
+        outputArrayVariable.symbol.closure = true;
+//        symbolEnter.defineSymbol(pos, outputArrayVariable.symbol, env);
+
+
 //        BLangInvokableNode encInvokable = env.enclInvokable;
 //        ((BLangFunction) encInvokable).closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
 //        ((BLangFunction) encInvokable).closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
@@ -178,10 +182,10 @@ public class QueryDesugar extends BLangNodeVisitor {
 
         // Set the indexed based access expression statement as foreach body
         BLangSimpleVariable input = ((BLangSimpleVariableDef) fromClause.getVariableDefinitionNode()).var;
-        BLangLambdaFunction labmdafunc = createLambdaFunction(pos, Lists.of(outputArrayVariable,input), nullType);
+        BLangLambdaFunction labmdafunc = createLambdaFunction(pos, Lists.of(input), nullType);
         BLangBlockStmt lambdaBody = labmdafunc.function.body;
         lambdaBody.stmts.add(outputVarAssignment);
-        labmdafunc.function.closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
+//        labmdafunc.function.closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, pos));
 //        outputArrayVariable.symbol.closure = true;
 
 
