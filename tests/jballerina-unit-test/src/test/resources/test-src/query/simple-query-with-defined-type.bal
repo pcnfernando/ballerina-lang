@@ -129,7 +129,7 @@ type Employee record {
 function testForEach()  returns Person[] {
     Person chiran = {name: "Chiran", age: 75};
     Person mohan = {name: "Mohan", age: 80};
-    Person[] personList = [chiran];
+    Person[] personList = [chiran, mohan];
 
     Person[] filteredList = [];
     stream<Person> streamedPerson = personList.toStream();
