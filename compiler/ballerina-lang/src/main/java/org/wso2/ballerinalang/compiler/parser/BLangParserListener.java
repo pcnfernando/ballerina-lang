@@ -1460,7 +1460,7 @@ public class BLangParserListener extends BallerinaParserBaseListener {
             return;
         }
 
-        this.pkgBuilder.addLetExpression();
+        this.pkgBuilder.addLetExpression(getCurrentPos(ctx));
     }
 
     @Override
