@@ -163,6 +163,7 @@ public enum NodeKind {
     FROM,
     WHERE,
     DO,
+    LET,
 
     /* Types */
     ARRAY_TYPE,

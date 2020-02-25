@@ -2694,6 +2694,20 @@ public class BLangParserListener extends BallerinaParserBaseListener {
         }
     }
 
+    public void enterLetClause(BallerinaParser.LetClauseContext ctx) {
+        if (isInErrorState) {
+            return;
+        }
+        this.pkgBuilder.startLetVarList();
+    }
+
+    public void exitLetClause(BallerinaParser.LetClauseContext ctx) {
+        if (isInErrorState) {
+            return;
+        }
+        this.pkgBuilder.addLetClause(getCurrentPos(ctx));
+    }
+
     @Override
     public void exitWhereClause(BallerinaParser.WhereClauseContext ctx) {
         if (isInErrorState) {

@@ -877,6 +877,10 @@ whereClause
     :   WHERE expression
     ;
 
+letClause
+    :   LET letVarDecl (COMMA letVarDecl)*
+    ;
+
 fromClause
     :   FROM (typeName | VAR) bindingPattern IN expression
     ;
@@ -886,7 +890,7 @@ doClause
     ;
 
 queryPipeline
-    :   fromClause (fromClause | whereClause)*
+    :   fromClause (fromClause | letClause | whereClause)*
     ;
 
 queryExpr
