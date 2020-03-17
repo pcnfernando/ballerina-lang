@@ -3099,7 +3099,7 @@ public class Desugar extends BLangNodeVisitor {
                 + transactionIndex++;
     }
 
-    private BLangLambdaFunction createLambdaFunction(DiagnosticPos pos, String functionNamePrefix,
+    BLangLambdaFunction createLambdaFunction(DiagnosticPos pos, String functionNamePrefix,
                                                      List<BLangSimpleVariable> lambdaFunctionVariable,
                                                      TypeNode returnType, BLangFunctionBody lambdaBody) {
         BLangLambdaFunction lambdaFunction = (BLangLambdaFunction) TreeBuilder.createLambdaFunctionNode();
@@ -3842,7 +3842,7 @@ public class Desugar extends BLangNodeVisitor {
         throw new IllegalStateException("None object type '" + type.toString() + "' found in object init context");
     }
 
-    private BLangErrorType getErrorTypeNode() {
+    BLangErrorType getErrorTypeNode() {
         BLangErrorType errorTypeNode = (BLangErrorType) TreeBuilder.createErrorTypeNode();
         errorTypeNode.type = symTable.errorType;
         return errorTypeNode;

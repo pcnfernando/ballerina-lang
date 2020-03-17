@@ -17,6 +17,9 @@
 package org.wso2.ballerinalang.compiler.desugar;
 
 import org.ballerinalang.model.TreeBuilder;
+import org.ballerinalang.model.elements.Flag;
+import org.ballerinalang.model.types.NilType;
+import org.ballerinalang.model.types.TypeKind;
 import org.wso2.ballerinalang.compiler.parser.BLangAnonymousModelHelper;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.SymbolEnter;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.SymbolResolver;
@@ -24,10 +27,15 @@ import org.wso2.ballerinalang.compiler.semantics.analyzer.Types;
 import org.wso2.ballerinalang.compiler.semantics.model.SymbolEnv;
 import org.wso2.ballerinalang.compiler.semantics.model.SymbolTable;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BInvokableSymbol;
+import org.wso2.ballerinalang.compiler.semantics.model.symbols.BSymbol;
 import org.wso2.ballerinalang.compiler.semantics.model.symbols.BVarSymbol;
+import org.wso2.ballerinalang.compiler.semantics.model.symbols.SymTag;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BArrayType;
+import org.wso2.ballerinalang.compiler.semantics.model.types.BNilType;
+import org.wso2.ballerinalang.compiler.semantics.model.types.BStreamType;
 import org.wso2.ballerinalang.compiler.semantics.model.types.BType;
 import org.wso2.ballerinalang.compiler.tree.BLangIdentifier;
+import org.wso2.ballerinalang.compiler.tree.BLangInvokableNode;
 import org.wso2.ballerinalang.compiler.tree.BLangNodeVisitor;
 import org.wso2.ballerinalang.compiler.tree.BLangSimpleVariable;
 import org.wso2.ballerinalang.compiler.tree.clauses.BLangDoClause;
@@ -38,6 +46,7 @@ import org.wso2.ballerinalang.compiler.tree.clauses.BLangWhereClause;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangExpression;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangIndexBasedAccess;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangInvocation;
+import org.wso2.ballerinalang.compiler.tree.expressions.BLangLambdaFunction;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangListConstructorExpr;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangLiteral;
 import org.wso2.ballerinalang.compiler.tree.expressions.BLangQueryExpr;
@@ -51,6 +60,10 @@ import org.wso2.ballerinalang.compiler.tree.statements.BLangIf;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangQueryAction;
 import org.wso2.ballerinalang.compiler.tree.statements.BLangSimpleVariableDef;
 import org.wso2.ballerinalang.compiler.tree.types.BLangLetVariable;
+import org.wso2.ballerinalang.compiler.tree.types.BLangType;
+import org.wso2.ballerinalang.compiler.tree.types.BLangUnionTypeNode;
+import org.wso2.ballerinalang.compiler.tree.types.BLangValueType;
+import org.wso2.ballerinalang.compiler.util.ClosureVarSymbol;
 import org.wso2.ballerinalang.compiler.util.CompilerContext;
 import org.wso2.ballerinalang.compiler.util.Name;
 import org.wso2.ballerinalang.compiler.util.Names;
@@ -60,7 +73,9 @@ import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticPos;
 import org.wso2.ballerinalang.util.Lists;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Class responsible for desugar query pipeline into actual Ballerina code.
@@ -80,6 +95,7 @@ public class QueryDesugar extends BLangNodeVisitor {
     private final Names names;
     private final Types types;
     private BLangForeach parentForeach = null;
+    private  BLangSelectClause selectClause = null;
 
     private QueryDesugar(CompilerContext context) {
         context.put(QUERY_DESUGAR_KEY, this);
@@ -105,7 +121,7 @@ public class QueryDesugar extends BLangNodeVisitor {
     BLangStatementExpression desugarQueryExpr(BLangQueryExpr queryExpr, SymbolEnv env) {
         List<BLangFromClause> fromClauseList = queryExpr.fromClauseList;
         BLangFromClause fromClause = fromClauseList.get(0);
-        BLangSelectClause selectClause = queryExpr.selectClause;
+        selectClause = queryExpr.selectClause;
         List<BLangWhereClause> whereClauseList = queryExpr.whereClauseList;
         List<BLangLetClause> letClauseList = queryExpr.letClausesList;
         DiagnosticPos pos = fromClause.pos;
@@ -126,8 +142,10 @@ public class QueryDesugar extends BLangNodeVisitor {
             return buildExpressionStatementForXML(selectClause, pos, env, whereClauseList, letClauseList,
                     foreachBody, leafForeach);
         } else {
+//            return buildExpressionStatementForList(selectClause, pos, env, whereClauseList, letClauseList,
+//                    foreachBody, leafForeach);
             return buildExpressionStatementForList(selectClause, pos, env, whereClauseList, letClauseList,
-                    foreachBody, leafForeach);
+                    fromClauseList);
         }
     }
 
@@ -170,7 +188,7 @@ public class QueryDesugar extends BLangNodeVisitor {
         return stmtExpr;
     }
 
-    private BLangStatementExpression buildExpressionStatementForList(BLangSelectClause selectClause,
+   /* private BLangStatementExpression buildExpressionStatementForList(BLangSelectClause selectClause,
                                                                      DiagnosticPos pos, SymbolEnv env,
                                                                      List<BLangWhereClause> whereClauseList,
                                                                      List<BLangLetClause> letClauseList,
@@ -214,6 +232,105 @@ public class QueryDesugar extends BLangNodeVisitor {
         BLangBlockStmt blockStmt = ASTBuilderUtil.createBlockStmt(pos);
         blockStmt.addStatement(outputVariableDef);
         blockStmt.addStatement(parentForeach);
+        BLangStatementExpression stmtExpr = ASTBuilderUtil.createStatementExpression(blockStmt, outputVarRef);
+
+        stmtExpr.type = outputArrayType;
+        return stmtExpr;
+    }*/
+
+    private BLangStatementExpression buildExpressionStatementForList(BLangSelectClause selectClause,
+                                                                     DiagnosticPos pos, SymbolEnv env,
+                                                                     List<BLangWhereClause> whereClauseList,
+                                                                     List<BLangLetClause> letClauseList,
+                                                                     List<BLangFromClause> fromClauseList) {
+        BArrayType outputArrayType = new BArrayType(selectClause.expression.type);
+        BLangListConstructorExpr emptyArrayExpr = ASTBuilderUtil.createEmptyArrayLiteral(pos,
+                outputArrayType);
+        BVarSymbol emptyArrayVarSymbol = new BVarSymbol(0, new Name("$outputDataArray$"),
+                env.scope.owner.pkgID, outputArrayType, env.scope.owner);
+//        emptyArrayVarSymbol.closure = true;
+        BLangSimpleVariable outputArrayVariable =
+                ASTBuilderUtil.createVariable(pos, "$outputDataArray$", outputArrayType,
+                        emptyArrayExpr, emptyArrayVarSymbol);
+
+        // Create temp array variable
+        //      Person[] x = [];
+
+        BLangSimpleVariableDef outputVariableDef =
+                ASTBuilderUtil.createVariableDef(pos, outputArrayVariable);
+        BLangSimpleVarRef outputVarRef = ASTBuilderUtil.createVariableRef(pos, outputArrayVariable.symbol);
+
+        // Create indexed based access expression statement
+        //      x[x.length()] = {
+        //         firstName: person.firstName,
+        //         lastName: person.lastName
+        //      };
+
+        BLangInvocation lengthInvocation = createLengthInvocation(selectClause.pos, outputArrayVariable.symbol);
+        lengthInvocation.expr = outputVarRef;
+        BLangIndexBasedAccess indexAccessExpr = ASTBuilderUtil.createIndexAccessExpr(outputVarRef, lengthInvocation);
+        indexAccessExpr.type = selectClause.expression.type;
+
+//        buildWhereClauseBlock(whereClauseList, letClauseList, leafForeach, foreachBody, selectClause.pos);
+
+        BLangBlockFunctionBody foreachBody = ASTBuilderUtil.createBlockFunctionBody(pos);
+
+        // Set the indexed based access expression statement as foreach body
+        BLangAssignment outputVarAssignment = ASTBuilderUtil.createAssignmentStmt(pos, indexAccessExpr,
+                selectClause.expression);
+        foreachBody.addStatement(outputVarAssignment);
+        BLangLambdaFunction fromLambda = null;
+        for (BLangFromClause fromClause : fromClauseList) {
+            fromLambda = desugar.createLambdaFunction(fromClause.pos, "$fromCluase$",
+                    Lists.of(((BLangSimpleVariableDef)fromClause.variableDefinitionNode).var),
+                    ASTBuilderUtil.createTypeNode(symTable.nilType),
+                    foreachBody);
+
+
+//            for (BLangSimpleVariable var : funcNode.requiredParams) {
+//                fromLambda.function.closureVarSymbols.add(new ClosureVarSymbol(var.symbol, var.pos));
+//            }
+        }
+        fromLambda.capturedClosureEnv = env;
+
+       /* for (BLangSimpleVariable var : fromLambda.function.requiredParams) {
+            fromLambda.function.closureVarSymbols.add(new ClosureVarSymbol(var.symbol, var.pos));
+        }*/
+        fromLambda.function.closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, outputArrayVariable.pos));
+        fromLambda.function.closureVarSymbols.add(new ClosureVarSymbol(outputArrayVariable.symbol, outputArrayVariable.pos));
+
+        BLangUnionTypeNode unionTypeNode = (BLangUnionTypeNode) TreeBuilder.createUnionTypeNode();
+        unionTypeNode.type = symTable.errorOrNilType;
+        unionTypeNode.memberTypeNodes.add(desugar.getErrorTypeNode());
+        BLangValueType nullType = new BLangValueType();
+        nullType.typeKind = TypeKind.NIL;
+        nullType.type = new BNilType();
+        unionTypeNode.memberTypeNodes.add(nullType);
+
+        BVarSymbol forEachReturnSym = new BVarSymbol(0, new Name("err"),
+                env.scope.owner.pkgID, unionTypeNode.type, env.scope.owner);
+
+        BInvokableSymbol forEachInvokableSymbol =
+                (BInvokableSymbol) symResolver.lookupLangLibMethod(new BStreamType(TypeTags.STREAM, null, null, null),
+                        names.fromString("forEach"));
+        BLangInvocation forEachInvocation = ASTBuilderUtil.createInvocationExprForMethod(pos, forEachInvokableSymbol,
+                Lists.of(fromClauseList.get(0).collection, fromLambda), symResolver);
+        forEachInvocation.expr = fromClauseList.get(0).collection;
+        forEachInvocation.type = unionTypeNode.type;
+        forEachInvocation.argExprs = Lists.of(fromClauseList.get(0).collection, fromLambda);
+
+
+        BLangSimpleVariable foreachVar =
+                ASTBuilderUtil.createVariable(pos, "$err$", unionTypeNode.type,
+                        forEachInvocation, forEachReturnSym);
+        BLangSimpleVariableDef foreachDef = ASTBuilderUtil.createVariableDef(pos);
+        foreachDef.var = foreachVar;
+        foreachDef.type = foreachVar.type;
+
+        // Create block statement with temp variable definition statement & foreach statement
+        BLangBlockStmt blockStmt = ASTBuilderUtil.createBlockStmt(pos);
+        blockStmt.addStatement(outputVariableDef);
+        blockStmt.addStatement(foreachDef);
         BLangStatementExpression stmtExpr = ASTBuilderUtil.createStatementExpression(blockStmt, outputVarRef);
 
         stmtExpr.type = outputArrayType;
