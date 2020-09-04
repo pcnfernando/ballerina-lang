@@ -264,21 +264,6 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
     }
 
     @Override
-    public FailStatementNode transform(
-            FailStatementNode failStatementNode) {
-        Token failKeyword =
-                modifyToken(failStatementNode.failKeyword());
-        ExpressionNode expression =
-                modifyNode(failStatementNode.expression());
-        Token semicolonToken =
-                modifyToken(failStatementNode.semicolonToken());
-        return failStatementNode.modify(
-                failKeyword,
-                expression,
-                semicolonToken);
-    }
-
-    @Override
     public ExpressionStatementNode transform(
             ExpressionStatementNode expressionStatementNode) {
         ExpressionNode expression =
@@ -360,13 +345,10 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyNode(whileStatementNode.condition());
         BlockStatementNode whileBody =
                 modifyNode(whileStatementNode.whileBody());
-        OnFailClauseNode onFailClause =
-                modifyNode(whileStatementNode.onFailClause().orElse(null));
         return whileStatementNode.modify(
                 whileKeyword,
                 condition,
-                whileBody,
-                onFailClause);
+                whileBody);
     }
 
     @Override
@@ -427,12 +409,9 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyToken(lockStatementNode.lockKeyword());
         StatementNode blockStatement =
                 modifyNode(lockStatementNode.blockStatement());
-        OnFailClauseNode onFailClause =
-                modifyNode(lockStatementNode.onFailClause().orElse(null));
         return lockStatementNode.modify(
                 lockKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     @Override
@@ -466,15 +445,12 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyNode(forEachStatementNode.actionOrExpressionNode());
         StatementNode blockStatement =
                 modifyNode(forEachStatementNode.blockStatement());
-        OnFailClauseNode onFailClause =
-                modifyNode(forEachStatementNode.onFailClause().orElse(null));
         return forEachStatementNode.modify(
                 forEachKeyword,
                 typedBindingPattern,
                 inKeyword,
                 actionOrExpressionNode,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     @Override
@@ -519,6 +495,19 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
         return checkExpressionNode.modify(
                 checkExpressionNode.kind(),
                 checkKeyword,
+                expression);
+    }
+
+    @Override
+    public FailExpressionNode transform(
+            FailExpressionNode failExpressionNode) {
+        Token failKeyword =
+                modifyToken(failExpressionNode.failKeyword());
+        ExpressionNode expression =
+                modifyNode(failExpressionNode.expression());
+        return failExpressionNode.modify(
+                failExpressionNode.kind(),
+                failKeyword,
                 expression);
     }
 
@@ -2582,12 +2571,9 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyToken(transactionStatementNode.transactionKeyword());
         BlockStatementNode blockStatement =
                 modifyNode(transactionStatementNode.blockStatement());
-        OnFailClauseNode onFailClause =
-                modifyNode(transactionStatementNode.onFailClause().orElse(null));
         return transactionStatementNode.modify(
                 transactionKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     @Override
@@ -2616,14 +2602,11 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyNode(retryStatementNode.arguments().orElse(null));
         StatementNode retryBody =
                 modifyNode(retryStatementNode.retryBody());
-        OnFailClauseNode onFailClause =
-                modifyNode(retryStatementNode.onFailClause().orElse(null));
         return retryStatementNode.modify(
                 retryKeyword,
                 typeParameter,
                 arguments,
-                retryBody,
-                onFailClause);
+                retryBody);
     }
 
     @Override
@@ -2753,15 +2736,12 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
                 modifyNodeList(matchStatementNode.matchClauses());
         Token closeBrace =
                 modifyToken(matchStatementNode.closeBrace());
-        OnFailClauseNode onFailClause =
-                modifyNode(matchStatementNode.onFailClause().orElse(null));
         return matchStatementNode.modify(
                 matchKeyword,
                 condition,
                 openBrace,
                 matchClauses,
-                closeBrace,
-                onFailClause);
+                closeBrace);
     }
 
     @Override
@@ -3061,42 +3041,6 @@ public abstract class TreeModifier extends NodeTransformer<Node> {
         return orderKeyNode.modify(
                 expression,
                 orderDirection);
-    }
-
-    @Override
-    public OnFailClauseNode transform(
-            OnFailClauseNode onFailClauseNode) {
-        Token onKeyword =
-                modifyToken(onFailClauseNode.onKeyword());
-        Token failKeyword =
-                modifyToken(onFailClauseNode.failKeyword());
-        TypeDescriptorNode typeDescriptor =
-                modifyNode(onFailClauseNode.typeDescriptor());
-        IdentifierToken failErrorName =
-                modifyNode(onFailClauseNode.failErrorName());
-        BlockStatementNode blockStatement =
-                modifyNode(onFailClauseNode.blockStatement());
-        return onFailClauseNode.modify(
-                onKeyword,
-                failKeyword,
-                typeDescriptor,
-                failErrorName,
-                blockStatement);
-    }
-
-    @Override
-    public DoStatementNode transform(
-            DoStatementNode doStatementNode) {
-        Token doKeyword =
-                modifyToken(doStatementNode.doKeyword());
-        BlockStatementNode blockStatement =
-                modifyNode(doStatementNode.blockStatement());
-        OnFailClauseNode onFailClause =
-                modifyNode(doStatementNode.onFailClause().orElse(null));
-        return doStatementNode.modify(
-                doKeyword,
-                blockStatement,
-                onFailClause);
     }
 
     // Tokens

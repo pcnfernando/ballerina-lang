@@ -36,22 +36,19 @@ public class STMatchStatementNode extends STStatementNode {
     public final STNode openBrace;
     public final STNode matchClauses;
     public final STNode closeBrace;
-    public final STNode onFailClause;
 
     STMatchStatementNode(
             STNode matchKeyword,
             STNode condition,
             STNode openBrace,
             STNode matchClauses,
-            STNode closeBrace,
-            STNode onFailClause) {
+            STNode closeBrace) {
         this(
                 matchKeyword,
                 condition,
                 openBrace,
                 matchClauses,
                 closeBrace,
-                onFailClause,
                 Collections.emptyList());
     }
 
@@ -61,7 +58,6 @@ public class STMatchStatementNode extends STStatementNode {
             STNode openBrace,
             STNode matchClauses,
             STNode closeBrace,
-            STNode onFailClause,
             Collection<STNodeDiagnostic> diagnostics) {
         super(SyntaxKind.MATCH_STATEMENT, diagnostics);
         this.matchKeyword = matchKeyword;
@@ -69,15 +65,13 @@ public class STMatchStatementNode extends STStatementNode {
         this.openBrace = openBrace;
         this.matchClauses = matchClauses;
         this.closeBrace = closeBrace;
-        this.onFailClause = onFailClause;
 
         addChildren(
                 matchKeyword,
                 condition,
                 openBrace,
                 matchClauses,
-                closeBrace,
-                onFailClause);
+                closeBrace);
     }
 
     public STNode modifyWith(Collection<STNodeDiagnostic> diagnostics) {
@@ -87,7 +81,6 @@ public class STMatchStatementNode extends STStatementNode {
                 this.openBrace,
                 this.matchClauses,
                 this.closeBrace,
-                this.onFailClause,
                 diagnostics);
     }
 
@@ -96,15 +89,13 @@ public class STMatchStatementNode extends STStatementNode {
             STNode condition,
             STNode openBrace,
             STNode matchClauses,
-            STNode closeBrace,
-            STNode onFailClause) {
+            STNode closeBrace) {
         if (checkForReferenceEquality(
                 matchKeyword,
                 condition,
                 openBrace,
                 matchClauses,
-                closeBrace,
-                onFailClause)) {
+                closeBrace)) {
             return this;
         }
 
@@ -114,7 +105,6 @@ public class STMatchStatementNode extends STStatementNode {
                 openBrace,
                 matchClauses,
                 closeBrace,
-                onFailClause,
                 diagnostics);
     }
 

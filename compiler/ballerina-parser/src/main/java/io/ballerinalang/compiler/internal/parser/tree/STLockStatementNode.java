@@ -33,58 +33,48 @@ import java.util.Collections;
 public class STLockStatementNode extends STStatementNode {
     public final STNode lockKeyword;
     public final STNode blockStatement;
-    public final STNode onFailClause;
 
     STLockStatementNode(
             STNode lockKeyword,
-            STNode blockStatement,
-            STNode onFailClause) {
+            STNode blockStatement) {
         this(
                 lockKeyword,
                 blockStatement,
-                onFailClause,
                 Collections.emptyList());
     }
 
     STLockStatementNode(
             STNode lockKeyword,
             STNode blockStatement,
-            STNode onFailClause,
             Collection<STNodeDiagnostic> diagnostics) {
         super(SyntaxKind.LOCK_STATEMENT, diagnostics);
         this.lockKeyword = lockKeyword;
         this.blockStatement = blockStatement;
-        this.onFailClause = onFailClause;
 
         addChildren(
                 lockKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     public STNode modifyWith(Collection<STNodeDiagnostic> diagnostics) {
         return new STLockStatementNode(
                 this.lockKeyword,
                 this.blockStatement,
-                this.onFailClause,
                 diagnostics);
     }
 
     public STLockStatementNode modify(
             STNode lockKeyword,
-            STNode blockStatement,
-            STNode onFailClause) {
+            STNode blockStatement) {
         if (checkForReferenceEquality(
                 lockKeyword,
-                blockStatement,
-                onFailClause)) {
+                blockStatement)) {
             return this;
         }
 
         return new STLockStatementNode(
                 lockKeyword,
                 blockStatement,
-                onFailClause,
                 diagnostics);
     }
 

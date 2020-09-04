@@ -203,17 +203,6 @@ public class STNodeFactory extends STAbstractNodeFactory {
                 semicolonToken);
     }
 
-    public static STNode createFailStatementNode(
-            STNode failKeyword,
-            STNode expression,
-            STNode semicolonToken) {
-
-        return new STFailStatementNode(
-                failKeyword,
-                expression,
-                semicolonToken);
-    }
-
     public static STNode createExpressionStatementNode(
             SyntaxKind kind,
             STNode expression,
@@ -272,14 +261,12 @@ public class STNodeFactory extends STAbstractNodeFactory {
     public static STNode createWhileStatementNode(
             STNode whileKeyword,
             STNode condition,
-            STNode whileBody,
-            STNode onFailClause) {
+            STNode whileBody) {
 
         return new STWhileStatementNode(
                 whileKeyword,
                 condition,
-                whileBody,
-                onFailClause);
+                whileBody);
     }
 
     public static STNode createPanicStatementNode(
@@ -321,13 +308,11 @@ public class STNodeFactory extends STAbstractNodeFactory {
 
     public static STNode createLockStatementNode(
             STNode lockKeyword,
-            STNode blockStatement,
-            STNode onFailClause) {
+            STNode blockStatement) {
 
         return new STLockStatementNode(
                 lockKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     public static STNode createForkStatementNode(
@@ -348,16 +333,14 @@ public class STNodeFactory extends STAbstractNodeFactory {
             STNode typedBindingPattern,
             STNode inKeyword,
             STNode actionOrExpressionNode,
-            STNode blockStatement,
-            STNode onFailClause) {
+            STNode blockStatement) {
 
         return new STForEachStatementNode(
                 forEachKeyword,
                 typedBindingPattern,
                 inKeyword,
                 actionOrExpressionNode,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     public static STNode createBinaryExpressionNode(
@@ -394,6 +377,17 @@ public class STNodeFactory extends STAbstractNodeFactory {
         return new STCheckExpressionNode(
                 kind,
                 checkKeyword,
+                expression);
+    }
+
+    public static STNode createFailExpressionNode(
+            SyntaxKind kind,
+            STNode failKeyword,
+            STNode expression) {
+
+        return new STFailExpressionNode(
+                kind,
+                failKeyword,
                 expression);
     }
 
@@ -1903,13 +1897,11 @@ public class STNodeFactory extends STAbstractNodeFactory {
 
     public static STNode createTransactionStatementNode(
             STNode transactionKeyword,
-            STNode blockStatement,
-            STNode onFailClause) {
+            STNode blockStatement) {
 
         return new STTransactionStatementNode(
                 transactionKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     public static STNode createRollbackStatementNode(
@@ -1927,15 +1919,13 @@ public class STNodeFactory extends STAbstractNodeFactory {
             STNode retryKeyword,
             STNode typeParameter,
             STNode arguments,
-            STNode retryBody,
-            STNode onFailClause) {
+            STNode retryBody) {
 
         return new STRetryStatementNode(
                 retryKeyword,
                 typeParameter,
                 arguments,
-                retryBody,
-                onFailClause);
+                retryBody);
     }
 
     public static STNode createCommitActionNode(
@@ -2028,16 +2018,14 @@ public class STNodeFactory extends STAbstractNodeFactory {
             STNode condition,
             STNode openBrace,
             STNode matchClauses,
-            STNode closeBrace,
-            STNode onFailClause) {
+            STNode closeBrace) {
 
         return new STMatchStatementNode(
                 matchKeyword,
                 condition,
                 openBrace,
                 matchClauses,
-                closeBrace,
-                onFailClause);
+                closeBrace);
     }
 
     public static STNode createMatchClauseNode(
@@ -2239,32 +2227,6 @@ public class STNodeFactory extends STAbstractNodeFactory {
                 startBacktick,
                 backtickContent,
                 endBacktick);
-    }
-
-    public static STNode createOnFailClauseNode(
-            STNode onKeyword,
-            STNode failKeyword,
-            STNode typeDescriptor,
-            STNode failErrorName,
-            STNode blockStatement) {
-
-        return new STOnFailClauseNode(
-                onKeyword,
-                failKeyword,
-                typeDescriptor,
-                failErrorName,
-                blockStatement);
-    }
-
-    public static STNode createDoStatementNode(
-            STNode doKeyword,
-            STNode blockStatement,
-            STNode onFailClause) {
-
-        return new STDoStatementNode(
-                doKeyword,
-                blockStatement,
-                onFailClause);
     }
 
     public static STNode createOrderByClauseNode(

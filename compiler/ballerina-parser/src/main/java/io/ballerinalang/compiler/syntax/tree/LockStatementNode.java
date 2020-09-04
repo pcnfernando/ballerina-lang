@@ -20,7 +20,6 @@ package io.ballerinalang.compiler.syntax.tree;
 import io.ballerinalang.compiler.internal.parser.tree.STNode;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * This is a generated syntax tree node.
@@ -41,10 +40,6 @@ public class LockStatementNode extends StatementNode {
         return childInBucket(1);
     }
 
-    public Optional<OnFailClauseNode> onFailClause() {
-        return optionalChildInBucket(2);
-    }
-
     @Override
     public void accept(NodeVisitor visitor) {
         visitor.visit(this);
@@ -59,25 +54,21 @@ public class LockStatementNode extends StatementNode {
     protected String[] childNames() {
         return new String[]{
                 "lockKeyword",
-                "blockStatement",
-                "onFailClause"};
+                "blockStatement"};
     }
 
     public LockStatementNode modify(
             Token lockKeyword,
-            StatementNode blockStatement,
-            OnFailClauseNode onFailClause) {
+            StatementNode blockStatement) {
         if (checkForReferenceEquality(
                 lockKeyword,
-                blockStatement,
-                onFailClause)) {
+                blockStatement)) {
             return this;
         }
 
         return NodeFactory.createLockStatementNode(
                 lockKeyword,
-                blockStatement,
-                onFailClause);
+                blockStatement);
     }
 
     public LockStatementNodeModifier modify() {
@@ -93,13 +84,11 @@ public class LockStatementNode extends StatementNode {
         private final LockStatementNode oldNode;
         private Token lockKeyword;
         private StatementNode blockStatement;
-        private OnFailClauseNode onFailClause;
 
         public LockStatementNodeModifier(LockStatementNode oldNode) {
             this.oldNode = oldNode;
             this.lockKeyword = oldNode.lockKeyword();
             this.blockStatement = oldNode.blockStatement();
-            this.onFailClause = oldNode.onFailClause().orElse(null);
         }
 
         public LockStatementNodeModifier withLockKeyword(
@@ -116,18 +105,10 @@ public class LockStatementNode extends StatementNode {
             return this;
         }
 
-        public LockStatementNodeModifier withOnFailClause(
-                OnFailClauseNode onFailClause) {
-            Objects.requireNonNull(onFailClause, "onFailClause must not be null");
-            this.onFailClause = onFailClause;
-            return this;
-        }
-
         public LockStatementNode apply() {
             return oldNode.modify(
                     lockKeyword,
-                    blockStatement,
-                    onFailClause);
+                    blockStatement);
         }
     }
 }

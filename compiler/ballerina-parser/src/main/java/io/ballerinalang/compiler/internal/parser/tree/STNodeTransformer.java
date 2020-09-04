@@ -73,10 +73,6 @@ public abstract class STNodeTransformer<T> {
         return transformSyntaxNode(breakStatementNode);
     }
 
-    public T transform(STFailStatementNode failStatementNode) {
-        return transformSyntaxNode(failStatementNode);
-    }
-
     public T transform(STExpressionStatementNode expressionStatementNode) {
         return transformSyntaxNode(expressionStatementNode);
     }
@@ -135,6 +131,10 @@ public abstract class STNodeTransformer<T> {
 
     public T transform(STCheckExpressionNode checkExpressionNode) {
         return transformSyntaxNode(checkExpressionNode);
+    }
+
+    public T transform(STFailExpressionNode failExpressionNode) {
+        return transformSyntaxNode(failExpressionNode);
     }
 
     public T transform(STFieldAccessExpressionNode fieldAccessExpressionNode) {
@@ -775,14 +775,6 @@ public abstract class STNodeTransformer<T> {
 
     public T transform(STDocumentationReferenceNode documentationReferenceNode) {
         return transformSyntaxNode(documentationReferenceNode);
-    }
-
-    public T transform(STOnFailClauseNode onFailClauseNode) {
-        return transformSyntaxNode(onFailClauseNode);
-    }
-
-    public T transform(STDoStatementNode doStatementNode) {
-        return transformSyntaxNode(doStatementNode);
     }
 
     public T transform(STOrderByClauseNode orderByClauseNode) {
