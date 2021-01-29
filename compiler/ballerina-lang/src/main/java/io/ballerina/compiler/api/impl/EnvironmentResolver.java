@@ -411,14 +411,7 @@ public class EnvironmentResolver extends BLangNodeVisitor {
             this.scope = this.symbolEnv;
             this.acceptNode(whileNode.body, this.symbolEnv);
         }
-        visitOnFailClause(whileNode.onFailClause);
-    }
-
-    private void visitOnFailClause(BLangOnFailClause onFailClause) {
-        if (onFailClause != null) {
-            SymbolEnv onFailEnv = SymbolEnv.createOnFailEnv(onFailClause, this.symbolEnv);
-            this.acceptNode(onFailClause, onFailEnv);
-        }
+        this.acceptNode(whileNode.onFailClause, symbolEnv);
     }
 
     @Override
@@ -430,7 +423,7 @@ public class EnvironmentResolver extends BLangNodeVisitor {
             this.acceptNode(transactionNode.transactionBody, transactionEnv);
         }
 
-        visitOnFailClause(transactionNode.onFailClause);
+        this.acceptNode(transactionNode.onFailClause, symbolEnv);
     }
 
     @Override
@@ -471,13 +464,13 @@ public class EnvironmentResolver extends BLangNodeVisitor {
     @Override
     public void visit(BLangLock lockNode) {
         this.acceptNode(lockNode.body, symbolEnv);
-        visitOnFailClause(lockNode.onFailClause);
+        this.acceptNode(lockNode.onFailClause, symbolEnv);
     }
 
     @Override
     public void visit(BLangForeach foreach) {
         this.acceptNode(foreach.body, symbolEnv);
-        visitOnFailClause(foreach.onFailClause);
+        this.acceptNode(foreach.onFailClause, symbolEnv);
     }
 
     @Override
@@ -486,7 +479,7 @@ public class EnvironmentResolver extends BLangNodeVisitor {
             this.scope = this.symbolEnv;
             matchNode.patternClauses.forEach(patternClause -> acceptNode(patternClause, this.symbolEnv));
         }
-        visitOnFailClause(matchNode.onFailClause);
+        this.acceptNode(matchNode.onFailClause, symbolEnv);
     }
 
     @Override
@@ -1136,7 +1129,7 @@ public class EnvironmentResolver extends BLangNodeVisitor {
     @Override
     public void visit(BLangDo doNode) {
         this.acceptNode(doNode.body, symbolEnv);
-        visitOnFailClause(doNode.onFailClause);
+        this.acceptNode(doNode.onFailClause, symbolEnv);
     }
 
     @Override
@@ -1155,7 +1148,7 @@ public class EnvironmentResolver extends BLangNodeVisitor {
     @Override
     public void visit(BLangRetry retryNode) {
         this.acceptNode(retryNode.retryBody, symbolEnv);
-        visitOnFailClause(retryNode.onFailClause);
+        this.acceptNode(retryNode.onFailClause, symbolEnv);
     }
 
     @Override
@@ -1213,7 +1206,8 @@ public class EnvironmentResolver extends BLangNodeVisitor {
 
     @Override
     public void visit(BLangOnFailClause onFailClause) {
-        this.acceptNode(onFailClause.body, symbolEnv);
+        SymbolEnv onFailEnv = SymbolEnv.createOnFailEnv(onFailClause, this.symbolEnv);
+        this.acceptNode(onFailClause.body, onFailEnv);
     }
 
     @Override
