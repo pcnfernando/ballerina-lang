@@ -382,8 +382,7 @@ public class SymbolTable {
                                                 Map.entry(Names.STRING, this.langStringModuleSymbol),
                                                 Map.entry(Names.TABLE, this.langTableModuleSymbol),
                                                 Map.entry(Names.TYPEDESC, this.langTypedescModuleSymbol),
-                                                Map.entry(Names.XML, this.langXmlModuleSymbol),
-                                                Map.entry(Names.TRANSACTION, this.langTransactionModuleSymbol));
+                                                Map.entry(Names.XML, this.langXmlModuleSymbol));
     }
 
     public void initializeType(BType type, String name, SymbolOrigin origin) {
