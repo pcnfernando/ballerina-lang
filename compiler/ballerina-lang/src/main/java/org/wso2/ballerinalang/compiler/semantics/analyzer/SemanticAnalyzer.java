@@ -3271,10 +3271,11 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
 
     @Override
     public void visit(BLangDo doNode) {
-        SymbolEnv narrowedEnv = SymbolEnv.createTypeNarrowedEnv(doNode, env);
         if (doNode.onFailClause != null) {
-            this.analyzeNode(doNode.onFailClause, narrowedEnv);
+            SymbolEnv narrowedOnFailEnv = SymbolEnv.createTypeNarrowedEnv(doNode.onFailClause, env);
+            this.analyzeNode(doNode.onFailClause, narrowedOnFailEnv);
         }
+        SymbolEnv narrowedEnv = SymbolEnv.createTypeNarrowedEnv(doNode, env);
         analyzeStmt(doNode.body, narrowedEnv);
     }
 
@@ -3433,7 +3434,6 @@ public class SemanticAnalyzer extends BLangNodeVisitor {
     @Override
     public void visit(BLangTransaction transactionNode) {
         SymbolEnv transactionEnv = SymbolEnv.createTransactionEnv(transactionNode, env);
-
         if (transactionNode.onFailClause != null) {
             this.analyzeNode(transactionNode.onFailClause, transactionEnv);
         }
