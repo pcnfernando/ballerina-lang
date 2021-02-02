@@ -40,7 +40,7 @@ public class BLangOnClause extends BLangNode implements OnClauseNode {
     public SymbolEnv lhsEnv;
     public SymbolEnv rhsEnv;
 
-    public Location equalsKeywordRange;
+    public Location equalsKeywordPos;
 
     public BLangOnClause() {
     }
