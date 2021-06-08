@@ -3370,9 +3370,13 @@ public class Desugar extends BLangNodeVisitor {
                         names.fromString(matchExprVarName), this.env.scope.owner.pkgID, matchExpr.type,
                         this.env.scope.owner, matchExpr.pos, VIRTUAL));
 
+//        matchBlockStmt.scope = new Scope(this.env.scope.owner);
         BLangSimpleVariableDef matchExprVarDef = ASTBuilderUtil.createVariableDef(matchBlockStmt.pos, matchExprVar);
+
         matchBlockStmt.stmts.add(matchExprVarDef);
         matchBlockStmt.stmts.add(convertMatchClausesToIfElseStmt(matchStatement.matchClauses, matchExprVar));
+//                matchStatement.matchClauses.get(0).declaredVars.values().forEach(value -> matchBlockStmt.scope.define(value.name, value));
+
         rewrite(matchBlockStmt, this.env);
 
         result = matchBlockStmt;
@@ -3406,6 +3410,9 @@ public class Desugar extends BLangNodeVisitor {
         BLangSimpleVariableDef resultVarDef = createVarDef("$result$", symTable.booleanType, null, pos);
         BLangSimpleVarRef resultVarRef = ASTBuilderUtil.createVariableRef(pos, resultVarDef.var.symbol);
         BLangBlockStmt mainBlock = ASTBuilderUtil.createBlockStmt(pos);
+
+//        mainBlock.scope = new Scope(this.env.scope.owner);
+//        mainBlock.scope.entries = matchClause.blockStmt.scope.entries;
         mainBlock.addStatement(resultVarDef);
         defineVars(mainBlock, new ArrayList<>(matchClause.declaredVars.values()));
         // $result$ = true
@@ -3433,9 +3440,14 @@ public class Desugar extends BLangNodeVisitor {
         for (BVarSymbol var : vars) {
             BLangSimpleVariable simpleVariable = ASTBuilderUtil.createVariable(var.pos, var.name.value, var.type,
                     null, var);
+//            BLangSimpleVariable simpleVariable = ASTBuilderUtil.createVariable(var.pos, var.name.value, var.type,
+//                    ASTBuilderUtil.createLiteral(var.pos, symTable.stringType, ""), var);
             BLangSimpleVariableDef simpleVariableDef = ASTBuilderUtil.createVariableDef(var.pos, simpleVariable);
             BLangSimpleVarRef simpleVarRef = ASTBuilderUtil.createVariableRef(var.pos, var);
             declaredVarDef.put(var.name.value, simpleVarRef);
+            this.env.scope.define(var.name, var);
+//            blockStmt.scope = new Scope(env.scope.owner);
+//            blockStmt.scope.define(var.name, var);
             blockStmt.addStatement(simpleVariableDef);
         }
     }
@@ -4020,6 +4032,7 @@ public class Desugar extends BLangNodeVisitor {
 
         BLangBlockStmt ifBlock = ASTBuilderUtil.createBlockStmt(pos);
         ifBlock.addStatement(tempCastVarDef);
+//        ifBlock.scope = listMatchPattern.scope;
         BLangIf ifStmt = ASTBuilderUtil.createIfElseStmt(pos, typeCheckCondition, ifBlock, null);
         mainBlockStmt.addStatement(ifStmt);
 
